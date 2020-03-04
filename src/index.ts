@@ -1,12 +1,10 @@
-import { Context } from 'koa';
-
-const Koa = require('koa');
+import Koa, { Context } from 'koa';
+import apiRouter from './api';
 
 const app = new Koa();
 
-app.use((ctx: Context) => {
-  ctx.body = 'hello world!';
-});
+app.use(apiRouter.allowedMethods())
+app.use(apiRouter.routes())
 
 app.listen(4000, () => {
   console.log('Listening on port 4000');

@@ -1,12 +1,10 @@
 import Router from '@koa/router';
-import { Context } from 'koa';
+
+import userRouter from './users';
 
 const router = new Router();
 
-router.get('/hello', (ctx: Context) => {
-  ctx.body = {
-    message: 'Hello',
-  };
-});
+router.use(userRouter.allowedMethods());
+router.use(userRouter.routes());
 
 export default router;

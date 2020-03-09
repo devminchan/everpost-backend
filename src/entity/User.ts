@@ -10,7 +10,7 @@ import { TimestampEntity } from './TimestampEntity';
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
 export class User extends TimestampEntity {
   @PrimaryGeneratedColumn()
-  userId: number;
+  id: number;
 
   @Column({ nullable: false })
   username: string;

@@ -4,7 +4,6 @@ import axios from 'axios';
 import QueryString from 'query-string';
 import { getManager } from 'typeorm';
 import { FacebookUser } from '@/entity/FacebookUser';
-import { User } from '@/entity/User';
 
 interface FacebookLoginRequest {
   access_token: string;
@@ -38,7 +37,7 @@ router.post('/users/facebook', async (ctx: Context) => {
     const response = await axios.get(GRAPH_API_URL + 'me?' + qs);
     const data = response.data as FacebookLoginResponse;
 
-    const user = await facebookUserRepository.create({
+    const user = facebookUserRepository.create({
       email: data.email,
       username: data.name,
       facebookUserId: data.id,

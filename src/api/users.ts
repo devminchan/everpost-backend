@@ -3,7 +3,7 @@ import { Context } from 'koa';
 import axios from 'axios';
 import QueryString from 'query-string';
 import { getManager } from 'typeorm';
-import { FacebookUser } from '../entity/FacebookUser';
+import { FacebookUser } from '@/entity/FacebookUser';
 
 interface FacebookLoginRequest {
   access_token: string;

@@ -2,13 +2,13 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  BaseEntity,
   TableInheritance,
 } from 'typeorm';
+import { TimestampEntity } from './TimestampEntity';
 
 @Entity()
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
-export class User extends BaseEntity {
+export class User extends TimestampEntity {
   @PrimaryGeneratedColumn()
   userId: number;
 

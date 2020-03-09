@@ -4,6 +4,7 @@ import axios from 'axios';
 import QueryString from 'query-string';
 import { getManager } from 'typeorm';
 import { FacebookUser } from '@/entity/FacebookUser';
+import { User } from '@/entity/User';
 
 interface FacebookLoginRequest {
   access_token: string;
@@ -41,9 +42,9 @@ router.post('/users/facebook', async (ctx: Context) => {
       email: data.email,
       username: data.name,
       facebookUserId: data.id,
+      createDate: new Date(),
+      modifyDate: new Date(),
     });
-
-    console.log(user);
 
     await user.save();
 

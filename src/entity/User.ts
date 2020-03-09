@@ -1,16 +1,23 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  BaseEntity,
+  TableInheritance,
+} from 'typeorm';
 
 @Entity()
-export class User {
+@TableInheritance({ column: { type: 'varchar', name: 'type' } })
+export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
-  id: number;
+  userId: number;
 
-  @Column()
-  firstName: string;
+  @Column({ nullable: false })
+  username: string;
 
-  @Column()
-  lastName: string;
+  @Column({ unique: true })
+  email: string;
 
-  @Column()
-  age: number;
+  @Column({ nullable: true })
+  profileImage: string;
 }

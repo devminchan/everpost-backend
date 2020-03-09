@@ -2,6 +2,8 @@ import Router from '@koa/router';
 import { Context } from 'koa';
 import axios from 'axios';
 import QueryString from 'query-string';
+import { getManager } from 'typeorm';
+import { FacebookUser } from '../entity/FacebookUser';
 
 interface FacebookLoginRequest {
   access_token: string;
@@ -18,8 +20,10 @@ const GRAPH_API_URL = 'https://graph.facebook.com/';
 
 const router = new Router();
 
-router.post('/users', async (ctx: Context) => {
+router.post('/users/facebook', async (ctx: Context) => {
   const { token } = ctx.request.body;
+
+  const facebookUserRepository = getManager().getRepository(FacebookUser);
 
   const loginRequest: FacebookLoginRequest = {
     // eslint-disable-next-line @typescript-eslint/camelcase
@@ -29,18 +33,29 @@ router.post('/users', async (ctx: Context) => {
 
   const qs = QueryString.stringify(loginRequest);
 
-  console.log('qs: ' + qs);
-
   try {
     const response = await axios.get(GRAPH_API_URL + 'me?' + qs);
     const data = response.data as FacebookLoginResponse;
 
+    const user = await facebookUserRepository.create({
+      email: data.email,
+      username: data.name,
+      facebookUserId: data.id,
+    });
+
+    console.log(user);
+
+    await user.save();
+
     ctx.body = {
-      message: 'Login success',
-      id: data.id,
+      message: 'Good',
+      data: {
+        user,
+      },
     };
   } catch (e) {
-    console.error(e.response.data);
+    const error = e as Error;
+    console.error(error.message);
 
     ctx.status = 500;
     ctx.body = {

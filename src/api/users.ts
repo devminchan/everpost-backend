@@ -1,22 +1,26 @@
 import Router from '@koa/router';
 import { Context } from 'koa';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import QueryString from 'query-string';
 import { getManager } from 'typeorm';
 import { FacebookUser } from '@/entity/FacebookUser';
+import { Readable } from 'stream';
+import fs from 'fs';
+import mime from 'mime';
+import { resolve } from 'url';
 
-interface FacebookLoginRequest {
+export interface FacebookLoginRequest {
   access_token: string;
   fields: string;
 }
 
-interface FacebookLoginResponse {
+export interface FacebookLoginResponse {
   id: string;
   email: string;
   name: string;
 }
 
-const GRAPH_API_URL = 'https://graph.facebook.com/';
+export const GRAPH_API_URL = 'https://graph.facebook.com/';
 
 const router = new Router();
 
@@ -33,6 +37,27 @@ router.post('/users/facebook', async (ctx: Context) => {
 
   const qs = QueryString.stringify(loginRequest);
 
+  const saveImageToLocal = (url: string, imagePath: string): Promise<void> => {
+    return axios({
+      url,
+      responseType: 'stream',
+    }).then((res: AxiosResponse<Readable>) => {
+      new Promise(resolve => {
+        const ext = mime.getExtension(res.headers['Content-Type']);
+        const filePath = imagePath + '.' + ext;
+
+        res.data
+          .pipe(fs.createWriteStream(filePath))
+          .on('finish', () => {
+            resolve(filePath);
+          })
+          .on('error', e => {
+            throw new Error(e);
+          });
+      });
+    });
+  };
+
   try {
     const response = await axios.get(GRAPH_API_URL + 'me?' + qs);
     const data = response.data as FacebookLoginResponse;
@@ -47,8 +72,12 @@ router.post('/users/facebook', async (ctx: Context) => {
 
     await user.save();
 
+    const downloadUrl = GRAPH_API_URL + `${data.id}/` + 'picture?type=large';
+
+    saveImageToLocal(downloadUrl, data.id);
+
     ctx.body = {
-      message: 'Good',
+      message: 'Success',
       data: {
         user,
       },

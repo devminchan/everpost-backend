@@ -1,5 +1,11 @@
 import { TimestampEntity } from './TimestampEntity';
-import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  OneToMany,
+  Column,
+} from 'typeorm';
 import { User } from './User';
 import { ImageResource } from './ImageResource';
 
@@ -10,6 +16,9 @@ export class Content extends TimestampEntity {
 
   @ManyToOne(() => User)
   user: User;
+
+  @Column()
+  title: string;
 
   @OneToMany(
     () => ImageResource,

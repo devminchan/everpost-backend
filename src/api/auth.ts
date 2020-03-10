@@ -35,13 +35,11 @@ router.post('/auth/facebook', async (ctx: Context) => {
     if (!user) {
       throw new Error('cannot find user!');
     }
-
-    
   } catch (e) {
     console.error(e);
   }
 
-  facebookUserRepository.find()
+  facebookUserRepository.find();
 });
 
 export default router;

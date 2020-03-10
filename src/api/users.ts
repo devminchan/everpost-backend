@@ -70,21 +70,23 @@ router.post('/users/facebook', async (ctx: Context) => {
     const response = await axios.get(GRAPH_API_URL + 'me?' + qs);
     const data = response.data as FacebookLoginResponse;
 
+    const downloadUrl = GRAPH_API_URL + `${data.id}/` + 'picture?type=large';
+    const saveResult = await saveImageToLocal(downloadUrl, data.id);
+
+    console.log('file saved as ' + saveResult);
+
     const user = facebookUserRepository.create({
       email: data.email,
       username: data.name,
       facebookUserId: data.id,
+      profileImage: saveResult,
       createDate: new Date(),
       modifyDate: new Date(),
     });
 
     await user.save();
 
-    const downloadUrl = GRAPH_API_URL + `${data.id}/` + 'picture?type=large';
-
-    const saveResult = await saveImageToLocal(downloadUrl, data.id);
-
-    console.log('file saved in ' + saveResult);
+    console.log(`User ${user.email} is now registered`);
 
     ctx.body = {
       message: 'Success',
@@ -94,7 +96,7 @@ router.post('/users/facebook', async (ctx: Context) => {
     };
   } catch (e) {
     const error = e as Error;
-    console.error(error.message);
+    console.error(error);
 
     ctx.status = 500;
     ctx.body = {

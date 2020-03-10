@@ -7,7 +7,6 @@ import { FacebookUser } from '@/entity/FacebookUser';
 import { Readable } from 'stream';
 import fs from 'fs';
 import mime from 'mime';
-import { resolve } from 'url';
 
 export interface FacebookLoginRequest {
   access_token: string;
@@ -21,6 +20,8 @@ export interface FacebookLoginResponse {
 }
 
 export const GRAPH_API_URL = 'https://graph.facebook.com/';
+
+const RESOURCE_PATH = 'resources/';
 
 const router = new Router();
 
@@ -37,24 +38,31 @@ router.post('/users/facebook', async (ctx: Context) => {
 
   const qs = QueryString.stringify(loginRequest);
 
-  const saveImageToLocal = (url: string, imagePath: string): Promise<void> => {
-    return axios({
+  const saveImageToLocal = async (
+    url: string,
+    imagePath: string,
+  ): Promise<string> => {
+    const streamRes = (await axios({
       url,
       responseType: 'stream',
-    }).then((res: AxiosResponse<Readable>) => {
-      new Promise(resolve => {
-        const ext = mime.getExtension(res.headers['Content-Type']);
-        const filePath = imagePath + '.' + ext;
+    })) as AxiosResponse<Readable>;
 
-        res.data
-          .pipe(fs.createWriteStream(filePath))
-          .on('finish', () => {
-            resolve(filePath);
-          })
-          .on('error', e => {
-            throw new Error(e);
-          });
-      });
+    return new Promise((resolve, reject) => {
+      if (!fs.existsSync(RESOURCE_PATH)) {
+        fs.mkdirSync(RESOURCE_PATH);
+      }
+
+      const ext = mime.getExtension(streamRes.headers['content-type']);
+      const filePath = RESOURCE_PATH + imagePath + '.' + ext; // <fileName>.jpg
+
+      streamRes.data
+        .pipe(fs.createWriteStream(filePath))
+        .on('finish', () => {
+          resolve(filePath);
+        })
+        .on('error', e => {
+          reject(e);
+        });
     });
   };
 
@@ -74,7 +82,9 @@ router.post('/users/facebook', async (ctx: Context) => {
 
     const downloadUrl = GRAPH_API_URL + `${data.id}/` + 'picture?type=large';
 
-    saveImageToLocal(downloadUrl, data.id);
+    const saveResult = await saveImageToLocal(downloadUrl, data.id);
+
+    console.log('file saved in ' + saveResult);
 
     ctx.body = {
       message: 'Success',

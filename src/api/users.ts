@@ -99,6 +99,7 @@ router.post('/users/facebook', async (ctx: Context) => {
     ctx.status = 500;
     ctx.body = {
       message: 'Login Failed',
+      reason: error.message,
     };
   }
 });

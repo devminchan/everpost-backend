@@ -9,6 +9,7 @@ import {
 } from './users';
 import axios from 'axios';
 import QueryString from 'query-string';
+import JWT from 'jsonwebtoken';
 
 const router = new Router();
 
@@ -35,11 +36,28 @@ router.post('/auth/facebook', async (ctx: Context) => {
     if (!user) {
       throw new Error('cannot find user!');
     }
+
+    const jwt = JWT.sign(
+      {
+        id: user.id,
+        email: user.email,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '7d',
+        algorithm: 'HS512',
+      },
+    );
+
+    ctx.body = {
+      jwt,
+    };
   } catch (e) {
     console.error(e);
-  }
 
-  facebookUserRepository.find();
+    // error 구분 필요!
+    ctx.throw(401, new Error('등록되지 않은 사용자입니다.'));
+  }
 });
 
 export default router;

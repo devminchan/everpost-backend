@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 import Koa from 'koa';
 import apiRouter from './api';
 import bodyparser from 'koa-bodyparser';

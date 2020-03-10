@@ -7,3 +7,6 @@ temp/
 
 # Image or files
 resources/
+
+# dot env
+.env

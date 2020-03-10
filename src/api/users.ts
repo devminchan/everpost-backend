@@ -80,8 +80,6 @@ router.post('/users/facebook', async (ctx: Context) => {
       username: data.name,
       facebookUserId: data.id,
       profileImage: saveResult,
-      createDate: new Date(),
-      modifyDate: new Date(),
     });
 
     await user.save();

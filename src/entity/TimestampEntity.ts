@@ -1,9 +1,9 @@
-import { Column, BaseEntity } from 'typeorm';
+import { BaseEntity, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 export abstract class TimestampEntity extends BaseEntity {
-  @Column({ type: 'timestamp' })
+  @CreateDateColumn()
   createDate: Date;
 
-  @Column({ type: 'timestamp' })
+  @UpdateDateColumn()
   modifyDate: Date;
 }

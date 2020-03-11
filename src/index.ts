@@ -5,7 +5,6 @@ import apiRouter from './api';
 import bodyparser from 'koa-bodyparser';
 import 'reflect-metadata';
 import { createConnection } from 'typeorm';
-import koaJwt from 'koa-jwt';
 
 createConnection()
   .then(async () => {
@@ -27,11 +26,6 @@ createConnection()
     });
 
     app.use(bodyparser());
-    app.use(
-      koaJwt({ secret: process.env.JWT_SECRET }).unless({
-        path: [/users\/facebook/, /auth*/],
-      }),
-    );
 
     app.use(apiRouter.allowedMethods());
     app.use(apiRouter.routes());

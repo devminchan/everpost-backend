@@ -14,7 +14,7 @@ export class Content extends TimestampEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { nullable: false })
   user: User;
 
   @Column()
@@ -24,5 +24,5 @@ export class Content extends TimestampEntity {
     () => ImageResource,
     imageResource => imageResource.content,
   )
-  imageResources: [ImageResource];
+  imageResources: ImageResource[];
 }

@@ -1,5 +1,4 @@
 import Router from '@koa/router';
-import { ExtendableContext, Context } from 'koa';
 
 import jwtValidate from '@/middleware/jwt-validate';
 import { User } from '@/entity/User';
@@ -10,7 +9,7 @@ import { ImageResource } from '@/entity/ImageResource';
 const router = new Router();
 
 router
-  .get('/contents', async (ctx: ExtendableContext) => {
+  .get('/contents', async ctx => {
     const contentRepository = getRepository(Content);
 
     try {
@@ -27,7 +26,7 @@ router
       ctx.throw(500, new Error('조회 실패'));
     }
   })
-  .post('/contents', jwtValidate(), async (ctx: Context) => {
+  .post('/contents', jwtValidate(), async ctx => {
     interface CreateContentRequest {
       title: string;
       imageUrls?: string[];

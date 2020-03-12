@@ -1,5 +1,4 @@
 import Router from '@koa/router';
-import { Context, ExtendableContext } from 'koa';
 import { getRepository } from 'typeorm';
 import { FacebookUser } from '@/entity/FacebookUser';
 import {
@@ -13,7 +12,7 @@ import JWT from 'jsonwebtoken';
 
 const router = new Router();
 
-router.post('/auth/facebook', async (ctx: ExtendableContext) => {
+router.post('/auth/facebook', async ctx => {
   const facebookUserRepository = getRepository(FacebookUser);
   const { token } = ctx.request.body;
 

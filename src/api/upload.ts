@@ -1,16 +1,18 @@
 import Router from '@koa/router';
 import multer from '@koa/multer';
-import { Context } from 'koa';
 import mime from 'mime';
+import jwtValidate from '@/middleware/jwt-validate';
+import { DefaultContext, DefaultState } from 'koa';
 
-const router = new Router();
+const router = new Router<DefaultState, DefaultContext>();
 
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
     cb(null, 'resources/');
   },
   filename: function(req, file, cb) {
-    const name = 'file_' + Math.random() * 100 + '-' + Date.now();
+    const randomNum = Math.floor(Math.random() * 1000);
+    const name = 'file_' + randomNum + '-' + Date.now();
     const ext = mime.getExtension(file.mimetype);
     const fileDest = name + '.' + ext;
 
@@ -22,7 +24,7 @@ const upload = multer({
   storage,
 });
 
-router.post('/upload', upload.array('files', 20), (ctx: Context) => {
+router.post('/upload', jwtValidate(), upload.array('files', 20), ctx => {
   if (!ctx.request.files || ctx.request.files.length === 0) {
     ctx.throw(400, new Error('No file uploaded'));
   }

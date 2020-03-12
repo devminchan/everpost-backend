@@ -1,5 +1,4 @@
 import Router from '@koa/router';
-import { ExtendableContext } from 'koa';
 import axios, { AxiosResponse } from 'axios';
 import QueryString from 'query-string';
 import { getManager } from 'typeorm';
@@ -25,7 +24,7 @@ const RESOURCE_PATH = 'resources/';
 
 const router = new Router();
 
-router.post('/users/facebook', async (ctx: ExtendableContext) => {
+router.post('/users/facebook', async ctx => {
   const { token } = ctx.request.body;
 
   const facebookUserRepository = getManager().getRepository(FacebookUser);

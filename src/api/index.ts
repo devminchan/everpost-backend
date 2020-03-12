@@ -3,7 +3,7 @@ import Router from '@koa/router';
 import userRouter from './users';
 import authRouter from './auth';
 import contentRouter from './contents';
-import { Context } from 'koa';
+import uploadRouter from './upload';
 
 const router = new Router();
 
@@ -16,11 +16,7 @@ router.use(userRouter.routes());
 router.use(contentRouter.allowedMethods());
 router.use(contentRouter.routes());
 
-// test endpoint
-router.get('/hello', (ctx: Context) => {
-  ctx.body = {
-    message: 'Success!!',
-  };
-});
+router.use(uploadRouter.allowedMethods());
+router.use(uploadRouter.routes());
 
 export default router;

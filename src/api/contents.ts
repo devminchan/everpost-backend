@@ -1,5 +1,5 @@
 import Router from '@koa/router';
-import { Context } from 'koa';
+import { ExtendableContext, Context } from 'koa';
 
 import jwtValidate from '@/middleware/jwt-validate';
 import { User } from '@/entity/User';
@@ -10,7 +10,7 @@ import { ImageResource } from '@/entity/ImageResource';
 const router = new Router();
 
 router
-  .get('/contents', async (ctx: Context) => {
+  .get('/contents', async (ctx: ExtendableContext) => {
     const contentRepository = getRepository(Content);
 
     try {

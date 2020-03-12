@@ -3,7 +3,7 @@ import { PrimaryGeneratedColumn, Column, Entity, ManyToOne } from 'typeorm';
 import { Content } from './Content';
 
 @Entity()
-export class ImageResource extends TimestampEntity {
+export class FileResource extends TimestampEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

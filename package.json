@@ -5,7 +5,9 @@
    "main": "index.js",
    "scripts": {
       "start": "nodemon -exec ts-node -r tsconfig-paths/register src/index.ts",
-      "test": "NODE_ENV=test jest"
+      "test": "NODE_ENV=test jest",
+      "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run",
+      "migration:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert"
    },
    "author": "",
    "license": "ISC",

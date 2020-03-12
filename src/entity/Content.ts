@@ -7,7 +7,7 @@ import {
   Column,
 } from 'typeorm';
 import { User } from './User';
-import { ImageResource } from './ImageResource';
+import { FileResource } from './FileResource';
 
 @Entity()
 export class Content extends TimestampEntity {
@@ -21,8 +21,8 @@ export class Content extends TimestampEntity {
   title: string;
 
   @OneToMany(
-    () => ImageResource,
-    imageResource => imageResource.content,
+    () => FileResource,
+    fileResource => fileResource.content,
   )
-  imageResources: ImageResource[];
+  fileResources: FileResource[];
 }

@@ -4,7 +4,7 @@ import jwtValidate from '@/middleware/jwt-validate';
 import { User } from '@/entity/User';
 import { Content } from '@/entity/Content';
 import { getRepository } from 'typeorm';
-import { ImageResource } from '@/entity/ImageResource';
+import { FileResource } from '@/entity/FileResource';
 
 const router = new Router();
 
@@ -29,15 +29,15 @@ router
   .post('/contents', jwtValidate(), async ctx => {
     interface CreateContentRequest {
       title: string;
-      imageUrls?: string[];
+      filePaths?: string[];
     }
 
     const contentRepository = getRepository(Content);
     const userRepository = getRepository(User);
-    const imageResourceRepository = getRepository(ImageResource);
+    const fileResourceRepository = getRepository(FileResource);
 
     const { id } = ctx.state.user;
-    const { title, imageUrls } = ctx.request.body as CreateContentRequest;
+    const { title, filePaths } = ctx.request.body as CreateContentRequest;
 
     try {
       const user = await userRepository.findOne({
@@ -51,17 +51,17 @@ router
 
       await newContent.save();
 
-      if (imageUrls) {
-        const imageResources: ImageResource[] = imageUrls.map(
-          (item: string): ImageResource => {
-            return imageResourceRepository.create({
+      if (filePaths) {
+        const fileResources: FileResource[] = filePaths.map(
+          (item: string): FileResource => {
+            return fileResourceRepository.create({
               imageUrl: item,
               content: newContent,
             });
           },
         );
 
-        await imageResourceRepository.save(imageResources);
+        await fileResourceRepository.save(fileResources);
       }
 
       ctx.body = {

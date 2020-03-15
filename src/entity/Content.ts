@@ -28,6 +28,7 @@ export class Content extends TimestampEntity {
   @OneToMany(
     () => FileResource,
     fileResource => fileResource.content,
+    { lazy: true },
   )
-  fileResources: FileResource[];
+  fileResources: FileResource[] | Promise<FileResource[]>; // promise는 lazy loading을 위함
 }

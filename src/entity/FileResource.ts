@@ -8,12 +8,12 @@ export class FileResource extends TimestampEntity {
   id: number;
 
   @Column({ nullable: false })
-  imageUrl: string;
+  fileUrl: string;
 
   @ManyToOne(
     () => Content,
     content => content.fileResources,
-    { nullable: false, onDelete: 'CASCADE' },
+    { nullable: false, onDelete: 'CASCADE', onUpdate: 'CASCADE' },
   )
   content!: Content;
 }

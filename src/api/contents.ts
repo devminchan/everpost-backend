@@ -151,6 +151,25 @@ router
     } catch (e) {
       ctx.throw(e);
     }
+  })
+  .delete('/contents/:id', jwtValidate(), async ctx => {
+    const { id } = ctx.state.user;
+    const contentId = ctx.params.id;
+
+    try {
+      const user = await User.findOne(id);
+
+      await Content.delete({
+        id: contentId,
+        user,
+      });
+
+      ctx.body = {
+        message: 'delete succss',
+      };
+    } catch (e) {
+      ctx.throw(e);
+    }
   });
 
 export default router;

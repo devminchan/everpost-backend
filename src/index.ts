@@ -18,7 +18,8 @@ createConnection()
       } catch (e) {
         console.error(e);
 
-        ctx.status = e.status || 500;
+        // default status 500
+        ctx.status = e.statusCode || e.status || 500;
         ctx.body = {
           message: e.message,
         };
@@ -27,6 +28,7 @@ createConnection()
 
     app.use(bodyparser());
 
+    // API router
     app.use(apiRouter.allowedMethods());
     app.use(apiRouter.routes());
 
@@ -34,4 +36,4 @@ createConnection()
       console.log('Listening on port 4000');
     });
   })
-  .catch(error => console.log(error));
+  .catch(error => console.error(error));

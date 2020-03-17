@@ -7,11 +7,12 @@ import {
 } from 'typeorm';
 import { TimestampEntity } from './TimestampEntity';
 import { Content } from './Content';
-import { IsEmail, IsNotEmpty } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsNumber } from 'class-validator';
 
 @Entity()
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
 export class User extends TimestampEntity {
+  @IsNumber()
   @PrimaryGeneratedColumn()
   id: number;
 

@@ -8,9 +8,11 @@ import {
 } from 'typeorm';
 import { User } from './User';
 import { FileResource } from './FileResource';
+import { IsNumber, Length } from 'class-validator';
 
 @Entity()
 export class Content extends TimestampEntity {
+  @IsNumber()
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -22,6 +24,7 @@ export class Content extends TimestampEntity {
   )
   user!: User;
 
+  @Length(8)
   @Column()
   title: string;
 

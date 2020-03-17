@@ -6,7 +6,7 @@ import {
   FacebookLoginResponse,
   GRAPH_API_URL,
 } from './users';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import QueryString from 'query-string';
 import JWT from 'jsonwebtoken';
 
@@ -24,39 +24,37 @@ router.post('/auth/facebook', async ctx => {
 
   const qs = QueryString.stringify(loginRequest);
 
+  let response: AxiosResponse<FacebookLoginResponse>;
+  let resData: FacebookLoginResponse;
+
+  // Facebook access token을 통한 검증
+  // access token이 잘못되었을 시 400 error 발생
   try {
-    const response = await axios.get(GRAPH_API_URL + 'me?' + qs);
-    const resData = response.data as FacebookLoginResponse;
-
-    const user = await facebookUserRepository.findOne({
-      facebookUserId: resData.id,
-    });
-
-    if (!user) {
-      throw new Error('cannot find user!');
-    }
-
-    const jwt = JWT.sign(
-      {
-        id: user.id,
-        email: user.email,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: '7d',
-        algorithm: 'HS512',
-      },
-    );
-
-    ctx.body = {
-      jwt,
-    };
+    response = await axios.get(GRAPH_API_URL + 'me?' + qs);
+    resData = response.data;
   } catch (e) {
-    console.error(e);
-
-    // error 구분 필요!
-    ctx.throw(401, new Error('등록되지 않은 사용자입니다.'));
+    ctx.throw(400, e);
   }
+
+  const user = await facebookUserRepository.findOneOrFail({
+    facebookUserId: resData.id,
+  });
+
+  const jwt = JWT.sign(
+    {
+      id: user.id,
+      email: user.email,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: '7d',
+      algorithm: 'HS512',
+    },
+  );
+
+  ctx.body = {
+    token: jwt,
+  };
 });
 
 export default router;

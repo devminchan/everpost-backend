@@ -27,15 +27,13 @@ const upload = multer({
 router.post('/upload', jwtValidate(), upload.array('files', 20), ctx => {
   if (!ctx.request.files || ctx.request.files.length === 0) {
     ctx.throw(400, new Error('No file uploaded'));
+    return;
   }
 
   const filePaths = ctx.request.files.map(item => item.path);
 
   ctx.body = {
-    message: 'upload success',
-    data: {
-      filePaths,
-    },
+    filePaths,
   };
 });
 

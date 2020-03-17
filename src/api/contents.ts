@@ -12,36 +12,30 @@ router
   .get('/contents', async ctx => {
     const contentRepository = getRepository(Content);
 
-    try {
-      const contents = await contentRepository.find({});
+    const contents = await contentRepository.find({});
 
-      ctx.body = {
-        data: {
-          contents,
-        },
-      };
-    } catch (e) {
-      console.error(e);
-
-      ctx.throw(500, new Error('조회 실패'));
-    }
+    ctx.body = {
+      meta: {
+        page: 1,
+        count: contents.length,
+      },
+      documents: [...contents],
+    };
   })
   .get('/contents/:id', jwtValidate(), async ctx => {
     const contentRepository = getRepository(Content);
-    const id: number = ctx.params.id;
+    const id: number = Number.parseInt(ctx.params.id);
 
-    try {
-      const content = await contentRepository.findOne(id);
-      const fileResources = await content.fileResources;
+    const content = await contentRepository.findOne(id);
+    // const fileResources = await content.fileResources;
 
+    // id로 접근 시 찾지 못했을 경우 not found Error!
+    if (content) {
       ctx.body = {
-        data: {
-          ...content,
-          fileResources,
-        },
+        ...content,
       };
-    } catch (e) {
-      ctx.throw(e);
+    } else {
+      ctx.throw(404, 'Content not found');
     }
   })
   .post('/contents', jwtValidate(), async ctx => {
@@ -57,39 +51,33 @@ router
     const { id } = ctx.state.user;
     const { title, filePaths } = ctx.request.body as CreateContentRequest;
 
-    try {
-      const user = await userRepository.findOne({
-        id,
-      });
+    const user = await userRepository.findOneOrFail({
+      id,
+    });
 
-      const newContent = contentRepository.create({
-        user,
-        title,
-      });
+    const newContent = contentRepository.create({
+      user,
+      title,
+    });
 
-      await newContent.save();
+    await newContent.save();
 
-      if (filePaths) {
-        const fileResources: FileResource[] = filePaths.map(
-          (item: string): FileResource => {
-            return fileResourceRepository.create({
-              fileUrl: item,
-              content: newContent,
-            });
-          },
-        );
-
-        await fileResourceRepository.save(fileResources);
-      }
-
-      ctx.body = {
-        data: {
-          newContent,
+    if (filePaths) {
+      const fileResources: FileResource[] = filePaths.map(
+        (item: string): FileResource => {
+          return fileResourceRepository.create({
+            fileUrl: item,
+            content: newContent,
+          });
         },
-      };
-    } catch (e) {
-      ctx.throw(e);
+      );
+
+      await fileResourceRepository.save(fileResources);
     }
+
+    ctx.body = {
+      ...newContent,
+    };
   })
   .patch('/contents/:id', jwtValidate(), async ctx => {
     interface UpdateContentRequest {
@@ -97,78 +85,68 @@ router
       filePaths?: string[] | null;
     }
 
+    const contentRepository = getRepository(Content);
+    const userRepository = getRepository(User);
+    const fileResourceRepository = getRepository(FileResource);
+
     const { id } = ctx.state.user;
     const update = ctx.request.body as UpdateContentRequest;
 
-    const contentId = Number.parseInt(ctx.params.id as string);
+    const contentId = Number.parseInt(ctx.params.id);
 
-    console.log(id, contentId);
+    const user = await userRepository.findOneOrFail(id);
 
-    try {
-      const user = await User.findOne(id);
+    const content = await contentRepository.findOneOrFail({
+      id: contentId,
+      user,
+    });
 
-      const content = await Content.findOne({
-        id: contentId,
-        user,
+    if (update.filePaths) {
+      await fileResourceRepository.delete({
+        content,
       });
 
-      console.log(content);
-
-      if (!content) {
-        throw new Error('Content not found');
-      }
-
-      if (update.filePaths) {
-        const fileResourceRepository = getRepository(FileResource);
-
-        await fileResourceRepository.delete({
-          content,
-        });
-
-        const fileResources: FileResource[] = update.filePaths.map(
-          (item: string): FileResource => {
-            return fileResourceRepository.create({
-              fileUrl: item,
-              content,
-            });
-          },
-        );
-
-        fileResourceRepository.save(fileResources);
-        content.fileResources = fileResources;
-      }
-
-      content.title = update.title || content.title;
-
-      await content.save();
-
-      ctx.body = {
-        message: 'update success',
-        data: {
-          ...content,
+      const fileResources: FileResource[] = update.filePaths.map(
+        (item: string): FileResource => {
+          return fileResourceRepository.create({
+            fileUrl: item,
+            content,
+          });
         },
-      };
-    } catch (e) {
-      ctx.throw(e);
+      );
+
+      await fileResourceRepository.save(fileResources);
+      content.fileResources = fileResources;
     }
+
+    content.title = update.title || content.title;
+
+    await content.save();
+
+    ctx.body = {
+      ...content,
+    };
   })
   .delete('/contents/:id', jwtValidate(), async ctx => {
+    const userRepository = getRepository(User);
+    const contentRepository = getRepository(Content);
+
     const { id } = ctx.state.user;
-    const contentId = ctx.params.id;
+    const contentId = Number.parseInt(ctx.params.id);
 
-    try {
-      const user = await User.findOne(id);
+    const user = await userRepository.findOneOrFail(id);
 
-      await Content.delete({
-        id: contentId,
-        user,
-      });
+    const result = await contentRepository.delete({
+      id: contentId,
+      user,
+    });
 
+    if (result.affected > 0) {
       ctx.body = {
         message: 'delete succss',
       };
-    } catch (e) {
-      ctx.throw(e);
+    } else {
+      ctx.throw(404, 'Content not found');
     }
   });
 

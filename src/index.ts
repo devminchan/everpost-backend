@@ -16,12 +16,14 @@ createConnection()
       try {
         await next();
       } catch (e) {
+        console.log('----- Error Handler Log -----');
         console.error(e);
+        console.log('-----------------------------');
 
         // default status 500
         ctx.status = e.statusCode || e.status || 500;
         ctx.body = {
-          message: e.message,
+          message: e.toString() || e.message || 'Unknown error occured',
         };
       }
     });

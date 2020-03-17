@@ -1,14 +1,13 @@
 import Router from '@koa/router';
 import axios, { AxiosResponse } from 'axios';
 import QueryString from 'query-string';
-import { getManager } from 'typeorm';
+import { getRepository } from 'typeorm';
 import { FacebookUser } from '@/entity/FacebookUser';
 import { Readable } from 'stream';
 import fs from 'fs';
 import mime from 'mime';
 import { User } from '@/entity/User';
 import jwtValidate from '@/middleware/jwt-validate';
-import { validate } from 'class-validator';
 
 export interface FacebookLoginRequest {
   access_token: string;
@@ -29,9 +28,9 @@ const router = new Router();
 
 router
   .post('/users/facebook', async ctx => {
-    const { token } = ctx.request.body;
+    const facebookUserRepository = getRepository(FacebookUser);
 
-    const facebookUserRepository = getManager().getRepository(FacebookUser);
+    const { token } = ctx.request.body;
 
     const loginRequest: FacebookLoginRequest = {
       // eslint-disable-next-line @typescript-eslint/camelcase
@@ -69,73 +68,49 @@ router
       });
     };
 
-    try {
-      const response = await axios.get(GRAPH_API_URL + 'me?' + qs);
-      const data = response.data as FacebookLoginResponse;
+    const response = await axios.get(GRAPH_API_URL + 'me?' + qs);
+    const data = response.data as FacebookLoginResponse;
 
-      const downloadUrl = GRAPH_API_URL + `${data.id}/` + 'picture?type=large';
-      const saveResult = await saveImageToLocal(downloadUrl, data.id);
+    const downloadUrl = GRAPH_API_URL + `${data.id}/` + 'picture?type=large';
+    const saveResult = await saveImageToLocal(downloadUrl, data.id);
 
-      console.log('file saved as ' + saveResult);
+    console.log('file saved as ' + saveResult);
 
-      const user = facebookUserRepository.create({
-        email: data.email,
-        username: data.name,
-        facebookUserId: data.id,
-        profileImage: saveResult,
-      });
+    const user = facebookUserRepository.create({
+      email: data.email,
+      username: data.name,
+      facebookUserId: data.id,
+      profileImage: saveResult,
+    });
 
-      const errors = await validate(user);
+    await user.save();
 
-      if (errors.length > 0) {
-        throw new Error('Validation failed');
-      }
+    console.log(`User ${user.email} is now registered`);
 
-      await user.save();
-
-      console.log(`User ${user.email} is now registered`);
-
-      ctx.body = {
-        message: 'Success',
-        data: {
-          user,
-        },
-      };
-    } catch (e) {
-      const error = e as Error;
-      console.error(error);
-
-      ctx.status = 500;
-      ctx.body = {
-        message: 'Login Failed',
-        reason: error.message,
-      };
-    }
-  })
-  .get('/users/:id', async ctx => {
-    const id: number = ctx.params.id;
-
-    try {
-      const user = await User.findOne(id);
-
-      ctx.body = {
-        data: { ...user },
-      };
-    } catch (e) {
-      ctx.throw(500, e);
-    }
+    ctx.body = {
+      ...user,
+    };
   })
   .get('/users/me', jwtValidate(), async ctx => {
     const { id } = ctx.state.user;
 
-    try {
-      const user = await User.findOne(id);
+    const user = await User.findOneOrFail(id); // 발견하지 못하면, error를 발생시킴
 
+    ctx.body = {
+      ...user,
+    };
+  })
+  .get('/users/:id', async ctx => {
+    const id: number = Number.parseInt(ctx.params.id);
+
+    const user = await User.findOne(id);
+
+    if (user) {
       ctx.body = {
-        data: user,
+        ...user,
       };
-    } catch (e) {
-      ctx.throw(500, e);
+    } else {
+      ctx.throw(404, 'User not found');
     }
   })
   .patch('/users/me', jwtValidate(), async ctx => {
@@ -148,42 +123,34 @@ router
     const { id } = ctx.state.user;
     const update = ctx.request.body as UpdateUserRequest;
 
-    try {
-      const user = await User.findOne(id);
+    const user = await User.findOneOrFail(id); // 발견하지 못하면, error를 발생시킴
 
-      user.username = update.username;
-      user.email = update.email || user.email;
-      user.profileImage = update.profileImage || user.profileImage;
+    user.username = update.username;
+    user.email = update.email || user.email;
+    user.profileImage = update.profileImage || user.profileImage;
 
-      const errors = await validate(user);
+    await user.save();
 
-      if (errors.length > 0) {
-        throw new Error('Validatoin Failed');
-      }
-
-      await user.save();
-
-      ctx.body = {
-        message: 'update success',
-        data: { ...user },
-      };
-    } catch (e) {
-      ctx.throw(e);
-    }
+    ctx.body = {
+      ...user,
+    };
   })
   .delete('/users/me', jwtValidate(), async ctx => {
+    const userRepository = getRepository(User);
+
     const { id } = ctx.state.user;
 
-    try {
-      await User.delete(id);
-      console.log('Removed user: ' + id);
+    const result = await userRepository.delete(id);
 
-      ctx.body = {
-        message: 'delete success',
-      };
-    } catch (e) {
-      ctx.throw(e);
+    if (result.affected > 0) {
+      console.log('Removed user: ' + id);
+    } else {
+      throw new Error('Removing user failed');
     }
+
+    ctx.body = {
+      message: 'delete success',
+    };
   });
 
 export default router;

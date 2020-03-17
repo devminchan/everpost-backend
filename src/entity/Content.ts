@@ -12,7 +12,6 @@ import { IsNumber, Length } from 'class-validator';
 
 @Entity()
 export class Content extends TimestampEntity {
-  @IsNumber()
   @PrimaryGeneratedColumn()
   id: number;
 

@@ -12,7 +12,6 @@ import { IsEmail, IsNotEmpty, IsNumber } from 'class-validator';
 @Entity()
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
 export class User extends TimestampEntity {
-  @IsNumber()
   @PrimaryGeneratedColumn()
   id: number;
 

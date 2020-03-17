@@ -5,7 +5,6 @@ import { IsNumber, IsNotEmpty } from 'class-validator';
 
 @Entity()
 export class FileResource extends TimestampEntity {
-  @IsNumber()
   @PrimaryGeneratedColumn()
   id: number;
 

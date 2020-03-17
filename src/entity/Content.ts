@@ -24,7 +24,7 @@ export class Content extends TimestampEntity {
   )
   user!: User;
 
-  @Length(8)
+  @Length(1)
   @Column()
   title: string;
 

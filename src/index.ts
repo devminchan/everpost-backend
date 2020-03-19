@@ -4,11 +4,6 @@ dotenv.config();
 if (process.env.NODE_ENV === 'production') {
   console.log('Run with production mode');
   require('module-alias/register');
-  console.log('process envs', [
-    process.env.DB_USERNAME,
-    process.env.DB_HOST,
-    process.env.DB_PASSWORD,
-  ]);
 } else if (process.env.NODE_ENV === 'development') {
   console.log('Run with development mode');
 }

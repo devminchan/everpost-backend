@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { User } from './User';
 import { FileResource } from './FileResource';
-import { IsNumber, Length } from 'class-validator';
+import { Length } from 'class-validator';
 
 @Entity()
 export class Content extends TimestampEntity {

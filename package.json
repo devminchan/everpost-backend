@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon -exec ts-node -r tsconfig-paths/register src/index.ts",
     "prod": "cross-env NODE_ENV=production node build/index.js",
-    "build": "tsc",
+    "build": "node_modules/.bin/tsc",
     "heroku": "npm run build && npm run prod",
     "test": "cross-env NODE_ENV=test jest",
     "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run",

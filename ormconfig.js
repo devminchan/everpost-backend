@@ -1,3 +1,13 @@
+let prodEntities = null;
+let prodMigs = null;
+let prodSubs = null;
+
+if (process.env.NODE_ENV === 'production') {
+  prodEntities = ['build/entity/**/*.js'];
+  prodMigs = ['build/migration/**/*.js'];
+  prodSubs = ['build/subscriber/**/*.js'];
+}
+
 module.exports = {
   type: 'mysql',
   host: process.env.DB_HOST || 'localhost',
@@ -7,9 +17,9 @@ module.exports = {
   database: process.env.DB_DBNAME || 'test',
   synchronize: true,
   logging: false,
-  entities: ['src/entity/**/*.ts'],
-  migrations: ['src/migration/**/*.ts'],
-  subscribers: ['src/subscriber/**/*.ts'],
+  entities: prodEntities || ['src/entity/**/*.ts'],
+  migrations: prodMigs || ['src/migration/**/*.ts'],
+  subscribers: prodSubs || ['src/subscriber/**/*.ts'],
   cli: {
     entitiesDir: 'src/entity',
     migrationsDir: 'src/migration',

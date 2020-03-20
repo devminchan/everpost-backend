@@ -9,7 +9,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 module.exports = {
-  type: process.env.DB_TYPE || 'mysql',
+  type: 'mysql',
   host: process.env.DB_HOST || 'localhost',
   port: Number.parseInt(process.env.DB_PORT) || 3306,
   username: process.env.DB_USERNAME || 'root',

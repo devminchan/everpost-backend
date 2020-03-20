@@ -1,9 +1,9 @@
 import dotenv from 'dotenv';
 dotenv.config();
+require('module-alias/register');
 
 if (process.env.NODE_ENV === 'production') {
   console.log('Run with production mode');
-  require('module-alias/register');
 } else if (process.env.NODE_ENV === 'development') {
   console.log('Run with development mode');
 }

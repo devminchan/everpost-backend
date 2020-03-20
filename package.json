@@ -4,11 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development nodemon -exec ts-node -r tsconfig-paths/register src/index.ts",
-    "prod": "cross-env NODE_ENV=production node build/index.js",
+    "start:dev": "cross-env NODE_ENV=development nodemon build/index.js",
+    "start:prod": "cross-env NODE_ENV=production node build/index.js",
     "tsc": "tsc",
     "build": "npm run tsc",
-    "heroku": "npm run build && npm run prod",
+    "heroku": "npm run build && npm run start:prod",
+    "dev": "npm run build && npm run start:dev",
     "test": "cross-env NODE_ENV=test jest",
     "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run",
     "migration:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert"

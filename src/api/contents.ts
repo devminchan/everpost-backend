@@ -27,7 +27,7 @@ router
     const id: number = Number.parseInt(ctx.params.id);
 
     const content = await contentRepository.findOne(id);
-    // const fileResources = await content.fileResources;
+    await content.fileResources;
 
     // id로 접근 시 찾지 못했을 경우 not found Error!
     if (content) {

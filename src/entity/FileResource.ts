@@ -1,6 +1,6 @@
 import { TimestampEntity } from './TimestampEntity';
 import { PrimaryGeneratedColumn, Column, Entity, ManyToOne } from 'typeorm';
-import { Content } from './Content';
+import { Post } from './Post';
 import { IsNotEmpty } from 'class-validator';
 
 @Entity()
@@ -13,9 +13,9 @@ export class FileResource extends TimestampEntity {
   fileUrl: string;
 
   @ManyToOne(
-    () => Content,
+    () => Post,
     content => content.fileResources,
     { nullable: false, onDelete: 'CASCADE', onUpdate: 'CASCADE' },
   )
-  content!: Content;
+  post!: Post;
 }

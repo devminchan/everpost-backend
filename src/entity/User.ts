@@ -6,7 +6,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { TimestampEntity } from './TimestampEntity';
-import { Content } from './Content';
+import { Post } from './Post';
 import { IsEmail, IsNotEmpty } from 'class-validator';
 
 @Entity()
@@ -27,8 +27,8 @@ export class User extends TimestampEntity {
   profileImage: string;
 
   @OneToMany(
-    () => Content,
+    () => Post,
     content => content.user,
   )
-  content: Content[];
+  posts: Post[];
 }

@@ -2,15 +2,15 @@ import Router from '@koa/router';
 
 import jwtValidate from '@/middleware/jwt-validate';
 import { User } from '@/entity/User';
-import { Content } from '@/entity/Content';
+import { Post } from '@/entity/Post';
 import { getRepository } from 'typeorm';
 import { FileResource } from '@/entity/FileResource';
 
 const router = new Router();
 
 router
-  .get('/contents', async ctx => {
-    const contentRepository = getRepository(Content);
+  .get('/posts', async ctx => {
+    const contentRepository = getRepository(Post);
 
     const contents = await contentRepository.find({});
 
@@ -22,8 +22,8 @@ router
       documents: [...contents],
     };
   })
-  .get('/contents/:id', jwtValidate(), async ctx => {
-    const contentRepository = getRepository(Content);
+  .get('/posts/:id', jwtValidate(), async ctx => {
+    const contentRepository = getRepository(Post);
     const id: number = Number.parseInt(ctx.params.id);
 
     const content = await contentRepository.findOne(id);
@@ -38,13 +38,13 @@ router
       ctx.throw(404, 'Content not found');
     }
   })
-  .post('/contents', jwtValidate(), async ctx => {
+  .post('/posts', jwtValidate(), async ctx => {
     interface CreateContentRequest {
       title: string;
       filePaths?: string[];
     }
 
-    const contentRepository = getRepository(Content);
+    const contentRepository = getRepository(Post);
     const userRepository = getRepository(User);
     const fileResourceRepository = getRepository(FileResource);
 
@@ -67,7 +67,7 @@ router
         (item: string): FileResource => {
           return fileResourceRepository.create({
             fileUrl: item,
-            content: newContent,
+            post: newContent,
           });
         },
       );
@@ -79,13 +79,14 @@ router
       ...newContent,
     };
   })
-  .patch('/contents/:id', jwtValidate(), async ctx => {
+  .patch('/posts/:id', jwtValidate(), async ctx => {
     interface UpdateContentRequest {
       title: string | null;
+      content: string | null;
       filePaths?: string[] | null;
     }
 
-    const contentRepository = getRepository(Content);
+    const contentRepository = getRepository(Post);
     const userRepository = getRepository(User);
     const fileResourceRepository = getRepository(FileResource);
 
@@ -96,40 +97,41 @@ router
 
     const user = await userRepository.findOneOrFail(id);
 
-    const content = await contentRepository.findOneOrFail({
+    const post = await contentRepository.findOneOrFail({
       id: contentId,
       user,
     });
 
     if (update.filePaths) {
       await fileResourceRepository.delete({
-        content,
+        post: post,
       });
 
       const fileResources: FileResource[] = update.filePaths.map(
         (item: string): FileResource => {
           return fileResourceRepository.create({
             fileUrl: item,
-            content,
+            post: post,
           });
         },
       );
 
       await fileResourceRepository.save(fileResources);
-      content.fileResources = fileResources;
+      post.fileResources = fileResources;
     }
 
-    content.title = update.title || content.title;
+    post.title = update.title || post.title;
+    post.content = update.content || post.content;
 
-    await content.save();
+    await post.save();
 
     ctx.body = {
-      ...content,
+      ...post,
     };
   })
-  .delete('/contents/:id', jwtValidate(), async ctx => {
+  .delete('/posts/:id', jwtValidate(), async ctx => {
     const userRepository = getRepository(User);
-    const contentRepository = getRepository(Content);
+    const contentRepository = getRepository(Post);
 
     const { id } = ctx.state.user;
     const contentId = Number.parseInt(ctx.params.id);

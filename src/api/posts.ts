@@ -41,6 +41,7 @@ router
   .post('/posts', jwtValidate(), async ctx => {
     interface CreateContentRequest {
       title: string;
+      content: string;
       filePaths?: string[];
     }
 
@@ -49,7 +50,8 @@ router
     const fileResourceRepository = getRepository(FileResource);
 
     const { id } = ctx.state.user;
-    const { title, filePaths } = ctx.request.body as CreateContentRequest;
+    const { title, content, filePaths } = ctx.request
+      .body as CreateContentRequest;
 
     const user = await userRepository.findOneOrFail({
       id,
@@ -58,6 +60,7 @@ router
     const newContent = contentRepository.create({
       user,
       title,
+      content,
     });
 
     await newContent.save();

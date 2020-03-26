@@ -13,11 +13,14 @@ import apiRouter from './api';
 import bodyparser from 'koa-bodyparser';
 import 'reflect-metadata';
 import { createConnection } from 'typeorm';
+import cors from 'koa2-cors';
 
 createConnection()
   .then(async () => {
     console.log('Connect to database... OK');
     const app = new Koa();
+
+    app.use(cors());
 
     // error handler
     app.use(async (ctx: Context, next: Next) => {

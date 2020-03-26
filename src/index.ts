@@ -14,6 +14,7 @@ import bodyparser from 'koa-bodyparser';
 import 'reflect-metadata';
 import { createConnection } from 'typeorm';
 import cors from 'koa2-cors';
+import logger from 'koa-logger';
 
 createConnection()
   .then(async () => {
@@ -21,6 +22,7 @@ createConnection()
     const app = new Koa();
 
     app.use(cors());
+    app.use(logger());
 
     // error handler
     app.use(async (ctx: Context, next: Next) => {

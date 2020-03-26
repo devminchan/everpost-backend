@@ -46,6 +46,7 @@
     "koa": "^2.11.0",
     "koa-bodyparser": "^4.2.1",
     "koa-jwt": "^3.6.0",
+    "koa-logger": "^3.2.1",
     "koa2-cors": "^2.0.6",
     "mime": "^2.4.4",
     "module-alias": "^2.2.2",

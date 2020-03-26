@@ -57,6 +57,8 @@ router
 
     await newUser.save();
 
+    delete newUser.password;
+
     ctx.body = {
       ...newUser,
     };

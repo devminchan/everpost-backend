@@ -3,11 +3,13 @@ import axios, { AxiosResponse } from 'axios';
 import QueryString from 'query-string';
 import { getRepository } from 'typeorm';
 import { FacebookUser } from '@/entity/FacebookUser';
+import { EmailUser } from '@/entity/EmailUser';
 import { Readable } from 'stream';
 import fs from 'fs';
 import mime from 'mime';
 import { User } from '@/entity/User';
 import jwtValidate from '@/middleware/jwt-validate';
+import { validateOrReject, MinLength } from 'class-validator';
 
 export interface FacebookLoginRequest {
   access_token: string;
@@ -27,6 +29,38 @@ const RESOURCE_PATH = 'resources/';
 const router = new Router();
 
 router
+  .post('/users/email', async ctx => {
+    interface EmailPasswordLoginRequest {
+      username: string;
+      email: string;
+      password: string;
+    }
+
+    class LoginRequestVertify {
+      @MinLength(8)
+      password: string;
+
+      constructor(req: EmailPasswordLoginRequest) {
+        this.password = req.password;
+      }
+    }
+
+    const emailUserRepository = getRepository(EmailUser);
+
+    const loginRequest = ctx.request.body as EmailPasswordLoginRequest;
+
+    await validateOrReject(new LoginRequestVertify(loginRequest));
+
+    const newUser = emailUserRepository.create({
+      ...loginRequest,
+    });
+
+    await newUser.save();
+
+    ctx.body = {
+      ...newUser,
+    };
+  })
   .post('/users/facebook', async ctx => {
     const facebookUserRepository = getRepository(FacebookUser);
 

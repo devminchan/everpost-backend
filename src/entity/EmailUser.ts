@@ -1,6 +1,6 @@
 import { Column, ChildEntity } from 'typeorm';
 import { User } from './User';
-import { IsNotEmpty, Length } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 
 @ChildEntity()
 export class EmailUser extends User {

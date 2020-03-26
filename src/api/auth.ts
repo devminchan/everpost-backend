@@ -9,52 +9,79 @@ import {
 import axios, { AxiosResponse } from 'axios';
 import QueryString from 'query-string';
 import JWT from 'jsonwebtoken';
+import { EmailUser } from '@/entity/EmailUser';
 
 const router = new Router();
 
-router.post('/auth/facebook', async ctx => {
-  const facebookUserRepository = getRepository(FacebookUser);
-  const { token } = ctx.request.body;
+router
+  .post('/auth/email', async ctx => {
+    const emailUserRepository = getRepository(EmailUser);
+    const { email, password } = ctx.request.body;
 
-  const loginRequest = {
-    // eslint-disable-next-line @typescript-eslint/camelcase
-    access_token: token,
-    fields: 'id,name,email',
-  } as FacebookLoginRequest;
+    const user = await emailUserRepository.findOne({
+      email,
+      password,
+    });
 
-  const qs = QueryString.stringify(loginRequest);
+    const jwt = JWT.sign(
+      {
+        id: user.id,
+        email: user.email,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '7d',
+        algorithm: 'HS512',
+      },
+    );
 
-  let response: AxiosResponse<FacebookLoginResponse>;
-  let resData: FacebookLoginResponse;
+    ctx.body = {
+      token: jwt,
+    };
+  })
+  .post('/auth/facebook', async ctx => {
+    const facebookUserRepository = getRepository(FacebookUser);
+    const { token } = ctx.request.body;
 
-  // Facebook access token을 통한 검증
-  // access token이 잘못되었을 시 400 error 발생
-  try {
-    response = await axios.get(GRAPH_API_URL + 'me?' + qs);
-    resData = response.data;
-  } catch (e) {
-    ctx.throw(400, e);
-  }
+    const loginRequest = {
+      // eslint-disable-next-line @typescript-eslint/camelcase
+      access_token: token,
+      fields: 'id,name,email',
+    } as FacebookLoginRequest;
 
-  const user = await facebookUserRepository.findOneOrFail({
-    facebookUserId: resData.id,
+    const qs = QueryString.stringify(loginRequest);
+
+    let response: AxiosResponse<FacebookLoginResponse>;
+    let resData: FacebookLoginResponse;
+
+    // Facebook access token을 통한 검증
+    // access token이 잘못되었을 시 400 error 발생
+    try {
+      response = await axios.get(GRAPH_API_URL + 'me?' + qs);
+      resData = response.data;
+    } catch (e) {
+      ctx.throw(400, e);
+    }
+
+    const user = await facebookUserRepository.findOneOrFail({
+      facebookUserId: resData.id,
+    });
+
+    const jwt = JWT.sign(
+      {
+        id: user.id,
+        email: user.email,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '7d',
+        algorithm: 'HS512',
+      },
+    );
+
+    ctx.body = {
+      token: jwt,
+    };
   });
-
-  const jwt = JWT.sign(
-    {
-      id: user.id,
-      email: user.email,
-    },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: '7d',
-      algorithm: 'HS512',
-    },
-  );
-
-  ctx.body = {
-    token: jwt,
-  };
-});
 
 export default router;

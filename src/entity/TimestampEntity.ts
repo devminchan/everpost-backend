@@ -1,5 +1,5 @@
 import { CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { ValidationEntity } from './ValidationEntity';
+import ValidationEntity from 'validation-entity';
 
 export abstract class TimestampEntity extends ValidationEntity {
   @CreateDateColumn({ type: 'datetime' })

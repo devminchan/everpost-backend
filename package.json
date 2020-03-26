@@ -39,7 +39,7 @@
     "@koa/router": "^8.0.8",
     "@types/koa__multer": "^2.0.1",
     "axios": "^0.19.2",
-    "class-validator": "^0.11.0",
+    "class-validator": "^0.11",
     "cross-env": "^7.0.2",
     "dotenv": "^8.2.0",
     "jsonwebtoken": "^8.5.1",
@@ -55,7 +55,8 @@
     "query-string": "^6.11.1",
     "reflect-metadata": "^0.1.10",
     "typeorm": "0.2.24",
-    "typescript": "3.3.3333"
+    "typescript": "3.3.3333",
+    "validation-entity": "0.0.5"
   },
   "_moduleAliases": {
     "@": "build"

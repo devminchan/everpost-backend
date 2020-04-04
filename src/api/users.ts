@@ -3,6 +3,7 @@ import { EmailUser } from '@/entity/EmailUser';
 import { User } from '@/entity/User';
 import jwtValidate from '@/middleware/jwt-validate';
 import { validateOrReject, MinLength } from 'class-validator';
+import { Post } from '@/entity/Post';
 
 const router = new Router();
 
@@ -97,6 +98,36 @@ router
     } else {
       ctx.throw(404, 'User not found!');
     }
+  })
+  .get('/users/me/posts', jwtValidate(), async ctx => {
+    const { id } = ctx.state.user;
+
+    interface PostPaginationRequest {
+      page: number;
+      size: number;
+    }
+
+    const req = ctx.query as PostPaginationRequest;
+
+    const size = req.size || 20;
+    const offset = req.page ? (req.page - 1) * size : 0;
+
+    const [contents, count] = await Post.createQueryBuilder('post')
+      .leftJoinAndSelect('post.user', 'user')
+      .where('user.id = :id', { id })
+      .orderBy('post.createDate')
+      .offset(offset)
+      .limit(size)
+      .getManyAndCount();
+
+    ctx.body = {
+      meta: {
+        page: req.page || 0,
+        count: count,
+        maxCount: size,
+      },
+      documents: contents,
+    };
   });
 
 export default router;

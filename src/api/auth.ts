@@ -1,15 +1,13 @@
 import Router from '@koa/router';
-import { getRepository } from 'typeorm';
 import JWT from 'jsonwebtoken';
 import { EmailUser } from '@/entity/EmailUser';
 
 const router = new Router();
 
 router.post('/auth/email', async ctx => {
-  const emailUserRepository = getRepository(EmailUser);
   const { email, password } = ctx.request.body;
 
-  const user = await emailUserRepository.findOne({
+  const user = await EmailUser.findOne({
     email,
     password,
   });

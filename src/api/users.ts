@@ -1,5 +1,4 @@
 import Router from '@koa/router';
-import { getRepository } from 'typeorm';
 import { EmailUser } from '@/entity/EmailUser';
 import { User } from '@/entity/User';
 import jwtValidate from '@/middleware/jwt-validate';
@@ -24,13 +23,11 @@ router
       }
     }
 
-    const emailUserRepository = getRepository(EmailUser);
-
     const loginRequest = ctx.request.body as EmailPasswordLoginRequest;
 
     await validateOrReject(new LoginRequestVertify(loginRequest));
 
-    const newUser = emailUserRepository.create({
+    const newUser = EmailUser.create({
       ...loginRequest,
     });
 
@@ -87,21 +84,19 @@ router
     };
   })
   .delete('/users/me', jwtValidate(), async ctx => {
-    const userRepository = getRepository(User);
-
     const { id } = ctx.state.user;
 
-    const result = await userRepository.delete(id);
+    const result = await User.delete(id);
 
     if (result.affected > 0) {
       console.log('Removed user: ' + id);
-    } else {
-      throw new Error('Removing user failed');
-    }
 
-    ctx.body = {
-      message: 'delete success',
-    };
+      ctx.body = {
+        message: 'delete success',
+      };
+    } else {
+      ctx.throw(404, 'User not found!');
+    }
   });
 
 export default router;

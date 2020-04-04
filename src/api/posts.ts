@@ -19,8 +19,6 @@ router
     const size = req.size || 20;
     const offset = req.page ? (req.page - 1) * size : 0;
 
-    console.log(offset);
-
     const [contents, count] = await Post.createQueryBuilder('post')
       .orderBy('createDate')
       .offset(offset)

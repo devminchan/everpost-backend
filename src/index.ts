@@ -1,8 +1,8 @@
 import dotenv from 'dotenv';
 dotenv.config();
-require('module-alias/register');
 
 if (process.env.NODE_ENV === 'production') {
+  require('module-alias/register');
   console.log('Run with production mode');
 } else if (process.env.NODE_ENV === 'development') {
   console.log('Run with development mode');
@@ -16,7 +16,17 @@ import { createConnection } from 'typeorm';
 import cors from 'koa2-cors';
 import logger from 'koa-logger';
 
-createConnection()
+createConnection({
+  type: 'mysql',
+  host: process.env.DB_HOST || 'localhost',
+  port: Number.parseInt(process.env.DB_PORT) || 3306,
+  username: process.env.DB_USERNAME || 'root',
+  password: process.env.DB_PASSWORD || '1234',
+  database: process.env.DB_DBNAME || 'everpost',
+  synchronize: true,
+  logging: false,
+  entities: [__dirname + '/entity/**/*{.ts,.js}'],
+})
   .then(async () => {
     console.log('Connect to database... OK');
     const app = new Koa();

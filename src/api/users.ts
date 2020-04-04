@@ -8,24 +8,24 @@ const router = new Router();
 
 router
   .post('/users/email', async ctx => {
-    interface EmailPasswordLoginRequest {
+    interface CreateUserRequest {
       username: string;
       email: string;
       password: string;
     }
 
-    class LoginRequestVertify {
+    class CreateUserRequestVertify {
       @MinLength(8)
       password: string;
 
-      constructor(req: EmailPasswordLoginRequest) {
+      constructor(req: CreateUserRequest) {
         this.password = req.password;
       }
     }
 
-    const loginRequest = ctx.request.body as EmailPasswordLoginRequest;
+    const loginRequest = ctx.request.body as CreateUserRequest;
 
-    await validateOrReject(new LoginRequestVertify(loginRequest));
+    await validateOrReject(new CreateUserRequestVertify(loginRequest));
 
     const newUser = EmailUser.create({
       ...loginRequest,

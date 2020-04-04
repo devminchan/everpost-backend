@@ -10,16 +10,31 @@ const router = new Router();
 
 router
   .get('/posts', async ctx => {
-    const contentRepository = getRepository(Post);
+    interface PostPaginationRequest {
+      page: number;
+      size: number;
+    }
 
-    const contents = await contentRepository.find({});
+    const req = ctx.query as PostPaginationRequest;
+
+    const size = req.size || 20;
+    const offset = req.page ? (req.page - 1) * size : 0;
+
+    console.log(offset);
+
+    const [contents, count] = await Post.createQueryBuilder('post')
+      .orderBy('createDate')
+      .offset(offset)
+      .limit(size)
+      .getManyAndCount();
 
     ctx.body = {
       meta: {
-        page: 1,
-        count: contents.length,
+        page: req.page || 0,
+        count: count,
+        maxCount: size,
       },
-      documents: [...contents],
+      documents: contents,
     };
   })
   .get('/posts/:id', jwtValidate(), async ctx => {

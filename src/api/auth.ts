@@ -7,7 +7,7 @@ const router = new Router();
 router.post('/auth/email', async ctx => {
   const { email, password } = ctx.request.body;
 
-  const user = await EmailUser.findOne({
+  const user = await EmailUser.findOneOrFail({
     email,
     password,
   });

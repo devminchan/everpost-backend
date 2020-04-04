@@ -1,5 +1,7 @@
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({
+  path: __dirname + '/../.env',
+});
 
 if (process.env.NODE_ENV === 'production') {
   require('module-alias/register');

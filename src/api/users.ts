@@ -1,9 +1,9 @@
 import Router from '@koa/router';
-import { EmailUser } from '@/entity/EmailUser';
 import { User } from '@/entity/User';
 import jwtValidate from '@/middleware/jwt-validate';
 import { validateOrReject, MinLength } from 'class-validator';
 import { Post } from '@/entity/Post';
+import { PasswordAccountAccess } from '@/entity/PasswordAccountAccess';
 
 const router = new Router();
 
@@ -28,13 +28,18 @@ router
 
     await validateOrReject(new CreateUserRequestVertify(loginRequest));
 
-    const newUser = EmailUser.create({
+    const newUser = User.create({
       ...loginRequest,
     });
 
     await newUser.save();
 
-    delete newUser.password;
+    const newAcc = PasswordAccountAccess.create({
+      user: newUser,
+      password: loginRequest.password,
+    });
+
+    await newAcc.save();
 
     ctx.body = {
       ...newUser,

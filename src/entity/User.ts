@@ -4,13 +4,14 @@ import {
   Column,
   TableInheritance,
   OneToMany,
+  ManyToOne,
 } from 'typeorm';
 import { TimestampEntity } from './TimestampEntity';
 import { Post } from './Post';
 import { IsEmail, IsNotEmpty } from 'class-validator';
+import { AccountAccess } from './AccountAccess';
 
 @Entity()
-@TableInheritance({ column: { type: 'varchar', name: 'type' } })
 export class User extends TimestampEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -31,4 +32,10 @@ export class User extends TimestampEntity {
     content => content.user,
   )
   posts: Post[];
+
+  @ManyToOne(
+    () => AccountAccess,
+    accountAccess => accountAccess.user,
+  )
+  accountAccessList: AccountAccess[];
 }

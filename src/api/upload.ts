@@ -3,6 +3,7 @@ import multer from '@koa/multer';
 import mime from 'mime';
 import jwtValidate from '@/middleware/jwt-validate';
 import { DefaultContext, DefaultState } from 'koa';
+import fs from 'fs';
 
 const router = new Router<DefaultState, DefaultContext>();
 
@@ -24,17 +25,29 @@ const upload = multer({
   storage,
 });
 
-router.post('/upload', jwtValidate(), upload.array('files', 20), ctx => {
-  if (!ctx.request.files || ctx.request.files.length === 0) {
-    ctx.throw(400, new Error('No file uploaded'));
-    return;
-  }
+router.post(
+  '/upload',
+  jwtValidate(),
+  async (ctx, next) => {
+    if (!fs.existsSync('resources')) {
+      fs.mkdirSync('resources');
+    }
 
-  const filePaths = ctx.request.files.map(item => item.path);
+    await next();
+  },
+  upload.array('files', 20),
+  ctx => {
+    if (!ctx.request.files || ctx.request.files.length === 0) {
+      ctx.throw(400, new Error('No file uploaded'));
+      return;
+    }
 
-  ctx.body = {
-    filePaths,
-  };
-});
+    const filePaths = ctx.request.files.map(item => item.path);
+
+    ctx.body = {
+      filePaths,
+    };
+  },
+);
 
 export default router;

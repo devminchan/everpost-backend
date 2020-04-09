@@ -1,14 +1,16 @@
 import Router from '@koa/router';
-import { EmailUser } from '@/entity/EmailUser';
 import { User } from '@/entity/User';
 import jwtValidate from '@/middleware/jwt-validate';
 import { validateOrReject, MinLength } from 'class-validator';
 import { Post } from '@/entity/Post';
+import { PasswordAccountAccess } from '@/entity/PasswordAccountAccess';
+import bcrypt from 'bcrypt';
+import JWT from 'jsonwebtoken';
 
 const router = new Router();
 
 router
-  .post('/users/email', async ctx => {
+  .post('/users', async ctx => {
     interface CreateUserRequest {
       username: string;
       email: string;
@@ -28,16 +30,68 @@ router
 
     await validateOrReject(new CreateUserRequestVertify(loginRequest));
 
-    const newUser = EmailUser.create({
+    const newUser = User.create({
       ...loginRequest,
     });
 
     await newUser.save();
 
-    delete newUser.password;
+    try {
+      const newAcc = PasswordAccountAccess.create({
+        user: newUser,
+        password: loginRequest.password,
+      });
+
+      newAcc.password = await bcrypt.hash(
+        newAcc.password,
+        Number.parseInt(process.env.PASSWORD_SALT_ROUND),
+      );
+
+      await newAcc.save();
+
+      ctx.body = {
+        ...newUser,
+      };
+    } catch (e) {
+      // AccountAccess 저장 중 오류 발생 시
+      // 생성된 newUser 제거
+      // TODO: 트랜젝션으로 전환 필요함
+      await newUser.remove();
+      throw e;
+    }
+  })
+  .post('/users/auth', async ctx => {
+    const { email, password } = ctx.request.body;
+
+    const user = await User.findOneOrFail({
+      email,
+    });
+
+    const acc = await PasswordAccountAccess.findOneOrFail({
+      user,
+    });
+
+    // 패스워드 불일치 시
+    const isSuccess = await bcrypt.compare(password, acc.password);
+
+    if (!isSuccess) {
+      ctx.throw(401, 'Password is wrong');
+    }
+
+    const jwt = JWT.sign(
+      {
+        id: user.id,
+        email: user.email,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '7d',
+        algorithm: 'HS512',
+      },
+    );
 
     ctx.body = {
-      ...newUser,
+      token: jwt,
     };
   })
   .get('/users/me', jwtValidate(), async ctx => {
@@ -99,8 +153,10 @@ router
       ctx.throw(404, 'User not found!');
     }
   })
-  .get('/users/me/posts', jwtValidate(), async ctx => {
-    const { id } = ctx.state.user;
+  .get('/users/:id/posts', async ctx => {
+    const userId = Number.parseInt(ctx.params.id);
+
+    console.log(userId);
 
     interface PostPaginationRequest {
       page: number;
@@ -114,7 +170,8 @@ router
 
     const [contents, count] = await Post.createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
-      .where('user.id = :id', { id })
+      .leftJoinAndSelect('post.fileResources', 'fileResources')
+      .where('user.id = :id', { id: userId })
       .orderBy('post.createDate')
       .offset(offset)
       .limit(size)

@@ -36,5 +36,5 @@ export class Post extends TimestampEntity {
     fileResource => fileResource.post,
     { lazy: true },
   )
-  fileResources: FileResource[] | Promise<FileResource[]>; // promise는 lazy loading을 위함
+  fileResources: FileResource[];
 }

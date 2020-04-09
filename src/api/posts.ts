@@ -37,8 +37,12 @@ router
   .get('/posts/:id', jwtValidate(), async ctx => {
     const id: number = Number.parseInt(ctx.params.id);
 
-    const content = await Post.findOneOrFail(id);
-    await content.fileResources;
+    const content = await Post.findOneOrFail({
+      where: {
+        id: id,
+      },
+      relations: ['fileResources'],
+    });
 
     ctx.body = {
       ...content,
@@ -48,11 +52,11 @@ router
     interface CreateContentRequest {
       title: string;
       content: string;
-      filePaths?: string[];
+      fileResources?: string[];
     }
 
     const { id } = ctx.state.user;
-    const { title, content, filePaths } = ctx.request
+    const { title, content, fileResources: filePaths } = ctx.request
       .body as CreateContentRequest;
 
     const user = await User.findOneOrFail(id);

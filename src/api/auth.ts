@@ -2,10 +2,11 @@ import Router from '@koa/router';
 import JWT from 'jsonwebtoken';
 import { User } from '@/entity/User';
 import { PasswordAccountAccess } from '@/entity/PasswordAccountAccess';
+import bcrypt from 'bcrypt';
 
 const router = new Router();
 
-router.post('/auth/email', async ctx => {
+router.post('/user/auth', async ctx => {
   const { email, password } = ctx.request.body;
 
   const user = await User.findOneOrFail({
@@ -17,8 +18,10 @@ router.post('/auth/email', async ctx => {
   });
 
   // 패스워드 불일치 시
-  if (acc.password !== password) {
-    ctx.throw(401, 'Email or password is wrong');
+  const isSuccess = await bcrypt.compare(password, acc.password);
+
+  if (!isSuccess) {
+    ctx.throw(401, 'Password is wrong');
   }
 
   const jwt = JWT.sign(

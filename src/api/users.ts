@@ -4,6 +4,7 @@ import jwtValidate from '@/middleware/jwt-validate';
 import { validateOrReject, MinLength } from 'class-validator';
 import { Post } from '@/entity/Post';
 import { PasswordAccountAccess } from '@/entity/PasswordAccountAccess';
+import bcrypt from 'bcrypt';
 
 const router = new Router();
 
@@ -34,16 +35,29 @@ router
 
     await newUser.save();
 
-    const newAcc = PasswordAccountAccess.create({
-      user: newUser,
-      password: loginRequest.password,
-    });
+    try {
+      const newAcc = PasswordAccountAccess.create({
+        user: newUser,
+        password: loginRequest.password,
+      });
 
-    await newAcc.save();
+      newAcc.password = await bcrypt.hash(
+        newAcc.password,
+        Number.parseInt(process.env.PASSWORD_SALT_ROUND),
+      );
 
-    ctx.body = {
-      ...newUser,
-    };
+      await newAcc.save();
+
+      ctx.body = {
+        ...newUser,
+      };
+    } catch (e) {
+      // AccountAccess 저장 중 오류 발생 시
+      // 생성된 newUser 제거
+      // TODO: 트랜젝션으로 전환 필요함
+      await newUser.remove();
+      throw e;
+    }
   })
   .get('/users/me', jwtValidate(), async ctx => {
     const { id } = ctx.state.user;

@@ -9,7 +9,7 @@ export abstract class AccountAccess extends TimestampEntity {
   @OneToOne(
     () => User,
     user => user.passwordAccountAccess,
-    { nullable: false, cascade: true },
+    { nullable: false, onDelete: 'CASCADE' },
   )
   @JoinColumn()
   user: User;

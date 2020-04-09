@@ -8,7 +8,7 @@ import { PasswordAccountAccess } from '@/entity/PasswordAccountAccess';
 const router = new Router();
 
 router
-  .post('/users/email', async ctx => {
+  .post('/users', async ctx => {
     interface CreateUserRequest {
       username: string;
       email: string;

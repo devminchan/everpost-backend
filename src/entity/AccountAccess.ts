@@ -1,4 +1,4 @@
-import { ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { PrimaryGeneratedColumn, OneToOne, JoinColumn } from 'typeorm';
 import { User } from './User';
 import { TimestampEntity } from './TimestampEntity';
 
@@ -6,10 +6,11 @@ export abstract class AccountAccess extends TimestampEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(
+  @OneToOne(
     () => User,
-    user => user.accountAccessList,
-    { nullable: false, onDelete: 'CASCADE', onUpdate: 'CASCADE' },
+    user => user.passwordAccountAccess,
+    { nullable: false, cascade: true },
   )
+  @JoinColumn()
   user: User;
 }

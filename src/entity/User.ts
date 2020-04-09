@@ -3,12 +3,12 @@ import {
   PrimaryGeneratedColumn,
   Column,
   OneToMany,
-  ManyToOne,
+  OneToOne,
 } from 'typeorm';
 import { TimestampEntity } from './TimestampEntity';
 import { Post } from './Post';
 import { IsEmail, IsNotEmpty } from 'class-validator';
-import { AccountAccess } from './AccountAccess';
+import { PasswordAccountAccess } from './PasswordAccountAccess';
 
 @Entity()
 export class User extends TimestampEntity {
@@ -32,9 +32,9 @@ export class User extends TimestampEntity {
   )
   posts: Post[];
 
-  @ManyToOne(
-    () => AccountAccess,
-    accountAccess => accountAccess.user,
+  @OneToOne(
+    () => PasswordAccountAccess,
+    paa => paa.user,
   )
-  accountAccessList: AccountAccess[];
+  passwordAccountAccess: PasswordAccountAccess;
 }

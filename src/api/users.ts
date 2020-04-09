@@ -153,8 +153,10 @@ router
       ctx.throw(404, 'User not found!');
     }
   })
-  .get('/users/me/posts', jwtValidate(), async ctx => {
-    const { id } = ctx.state.user;
+  .get('/users/:id/posts', async ctx => {
+    const userId = Number.parseInt(ctx.params.id);
+
+    console.log(userId);
 
     interface PostPaginationRequest {
       page: number;
@@ -168,7 +170,8 @@ router
 
     const [contents, count] = await Post.createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
-      .where('user.id = :id', { id })
+      .leftJoinAndSelect('post.fileResources', 'fileResources')
+      .where('user.id = :id', { id: userId })
       .orderBy('post.createDate')
       .offset(offset)
       .limit(size)

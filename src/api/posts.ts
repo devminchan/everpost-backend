@@ -20,7 +20,9 @@ router
     const offset = req.page ? (req.page - 1) * size : 0;
 
     const [contents, count] = await Post.createQueryBuilder('post')
-      .orderBy('createDate')
+      .leftJoinAndSelect('post.user', 'user')
+      .leftJoinAndSelect('post.fileResources', 'fileResources')
+      .orderBy('post.createDate')
       .offset(offset)
       .limit(size)
       .getManyAndCount();

@@ -19,7 +19,7 @@ export class Post extends TimestampEntity {
   @ManyToOne(
     () => User,
     user => user.posts,
-    { nullable: false, onDelete: 'CASCADE' },
+    { eager: true, nullable: false, onDelete: 'CASCADE' },
   )
   user!: User;
 
@@ -34,7 +34,6 @@ export class Post extends TimestampEntity {
   @OneToMany(
     () => FileResource,
     fileResource => fileResource.post,
-    { lazy: true },
   )
   fileResources: FileResource[];
 }

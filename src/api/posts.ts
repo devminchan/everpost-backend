@@ -8,11 +8,13 @@ import { FileResource } from '@/entity/FileResource';
 const router = new Router();
 
 router
-  .get('/posts', async ctx => {
+  .get('/posts', jwtValidate(), async ctx => {
     interface PostPaginationRequest {
       page: number;
       size: number;
     }
+
+    const { id } = ctx.state.user;
 
     const req = ctx.query as PostPaginationRequest;
 
@@ -22,6 +24,7 @@ router
     const [contents, count] = await Post.createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
       .leftJoinAndSelect('post.fileResources', 'fileResources')
+      .where('post.user.id = :id', { id: id })
       .orderBy('post.createDate')
       .offset(offset)
       .limit(size)

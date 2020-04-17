@@ -2,7 +2,6 @@ import Router from '@koa/router';
 import { User } from '@/entity/User';
 import jwtValidate from '@/middleware/jwt-validate';
 import { validateOrReject, MinLength } from 'class-validator';
-import { Post } from '@/entity/Post';
 import { PasswordAccountAccess } from '@/entity/PasswordAccountAccess';
 import bcrypt from 'bcrypt';
 import JWT from 'jsonwebtoken';
@@ -103,19 +102,6 @@ router
       ...user,
     };
   })
-  .get('/users/:id', async ctx => {
-    const id: number = Number.parseInt(ctx.params.id);
-
-    const user = await User.findOne(id);
-
-    if (user) {
-      ctx.body = {
-        ...user,
-      };
-    } else {
-      ctx.throw(404, 'User not found');
-    }
-  })
   .patch('/users/me', jwtValidate(), async ctx => {
     interface UpdateUserRequest {
       username: string | null;
@@ -152,39 +138,6 @@ router
     } else {
       ctx.throw(404, 'User not found!');
     }
-  })
-  .get('/users/:id/posts', async ctx => {
-    const userId = Number.parseInt(ctx.params.id);
-
-    console.log(userId);
-
-    interface PostPaginationRequest {
-      page: number;
-      size: number;
-    }
-
-    const req = ctx.query as PostPaginationRequest;
-
-    const size = req.size || 20;
-    const offset = req.page ? (req.page - 1) * size : 0;
-
-    const [contents, count] = await Post.createQueryBuilder('post')
-      .leftJoinAndSelect('post.user', 'user')
-      .leftJoinAndSelect('post.fileResources', 'fileResources')
-      .where('user.id = :id', { id: userId })
-      .orderBy('post.createDate')
-      .offset(offset)
-      .limit(size)
-      .getManyAndCount();
-
-    ctx.body = {
-      meta: {
-        page: req.page || 0,
-        count: count,
-        maxCount: size,
-      },
-      documents: contents,
-    };
   });
 
 export default router;
